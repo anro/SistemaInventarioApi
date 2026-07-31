@@ -1,0 +1,18 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace ApiInventario.DTOs;
+
+public class CompraDto
+{
+    [Required]
+    public int ProveedorId { get; set; }
+
+    public DateTime Fecha{ get; set; }
+
+    public string? Observacion { get; set; }
+	
+	public int UsuarioId { get; set; }
+
+    [Required]
+    public List<CompraDetalleDto> Detalles { get; set; } = new();
+}

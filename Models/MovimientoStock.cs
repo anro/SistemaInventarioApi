@@ -1,0 +1,24 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace ApiInventario.Models;
+
+public class MovimientoStock
+{
+	[Key]
+    public int MovimientoId { get; set; }
+
+    public int ProductoId { get; set; }
+
+    public string TipoMovimiento { get; set; }
+
+    public int Cantidad { get; set; }
+
+    public DateTime Fecha { get; set; }
+
+    public string Referencia { get; set; }
+
+
+    // Navegación
+
+    public Producto Producto { get; set; }
+}

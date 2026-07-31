@@ -1,0 +1,19 @@
+using ApiInventario.Models;
+using ApiInventario.DTOs;
+
+namespace ApiInventario.Services;
+
+public interface IUsuarioService
+{
+	Task<List<UsuarioDto>> ObtenerUsuarios(); //Listar usuarios
+
+    Task<UsuarioDto?> ObtenerUsuario(int id); // Buscar Usuarios
+
+    Task<UsuarioDto> CrearUsuario(RegistroUsuarioDto dto); // Crear usuarios
+	
+	Task<bool> ExisteEmail(string email); //
+	
+	Task<Usuario?> ObtenerPorEmail(string email);//
+	
+	Task<Usuario> Crear(Usuario usuario);//
+}

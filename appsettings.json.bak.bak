@@ -1,0 +1,59 @@
+
+{
+	/*
+	Es el archivo donde guardas configuración externa, NO código.
+	
+	Es como el pegasus.ini
+	*/
+	
+    "ConnectionStrings": {
+		"DefaultConnection": "Server=localhost;Database=SistemaVentasERP;Trusted_Connection=True;TrustServerCertificate=True"
+	},
+   "Logging": {
+		"LogLevel": {
+		  "Default": "Information",
+		  "Microsoft.AspNetCore": "Warning"
+		}
+	},
+	"AllowedHosts": "*",
+   //Autentificacion de Usuario
+	"Jwt": {
+    "Key": "ESTA_ES_MI_CLAVE_SUPER_SECRETA_123456",
+    "Issuer": "ApiEmpresa",
+    "Audience": "ApiEmpresaUsers",
+    "ExpiresMinutes": 60
+	}
+	"Serilog": {
+		"Using": [
+		"Serilog.Sinks.Console",
+		"Serilog.Sinks.File"
+		],
+    }
+	"MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "Microsoft.Hosting.Lifetime": "Information"
+      }
+    },
+
+    "WriteTo": [
+      {
+        "Name": "Console"
+      },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "Logs/log-.txt",
+          "rollingInterval": "Day",
+          "retainedFileCountLimit": 30,
+          "shared": true
+        }
+      }
+    ],
+
+    "Enrich": [
+      "FromLogContext"
+    ]
+}
+

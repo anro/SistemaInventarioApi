@@ -1,0 +1,194 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using ApiInventario.Models;
+using ApiInventario.Data;
+using ApiInventario.DTOs;
+
+//PARA PRUEBA DE PERMISO: using ApiInventario.Services;
+
+
+
+namespace ApiInventario.Controllers;
+
+/*
+En una API con JWT (JSON Web Token), el archivo AuthController.cs normalmente es el controlador encargado de la autenticación de usuarios.
+En otras palabras: es el “puerta de entrada” donde el usuario inicia sesión y recibe el token JWT.
+AuthController.cs en JWT hace esto:
+👉 Recibe login
+👉 Valida usuario
+👉 Genera token JWT
+👉 Devuelve el token
+*/
+
+[ApiController]
+[Route("api/[controller]")]
+
+public class AuthController : ControllerBase
+{
+    private readonly IConfiguration _config;
+	private readonly AppDbContext _context;
+
+    public AuthController( IConfiguration config, AppDbContext context)
+	{
+		_config = config;
+		_context = context;
+	}
+	
+	/*JWT (JSON Web Token)*/
+    [HttpPost("login")] /*Recibe credenciales--1-RECIBE EL LOGIN*/
+    public async Task<IActionResult> Login([FromBody] LoginDto login)/**Porque *usuamos await*/
+    {
+		/*var usuario = await _context.Usuarios
+        .FirstOrDefaultAsync(u => u.Email == login.Email);*/
+		
+		var usuario = await _context.Usuarios
+			.Include(u => u.Rol)
+			.FirstOrDefaultAsync(u => u.Email == login.Email);
+
+		if (usuario == null)
+		{
+			return Unauthorized("Usuario no encontrado");
+		}
+		
+		Console.WriteLine("======================");
+		Console.WriteLine($"Usuario: {usuario.Nombre}");
+		Console.WriteLine($"RolId: {usuario.RolId}");
+		Console.WriteLine($"Rol: {usuario.Rol?.Nombre}");
+		Console.WriteLine("======================");
+		
+		if (!BCrypt.Net.BCrypt.Verify(
+        login.Password,
+        usuario.PasswordHash))
+		{
+			return Unauthorized("Contraseña incorrecta");
+		}
+
+        var jwt = _config.GetSection("Jwt");
+
+        var keyString = jwt["Key"]
+		?? throw new Exception("JWT Key no configurada");
+
+		var key = new SymmetricSecurityKey(
+			Encoding.UTF8.GetBytes(keyString)
+		);
+		
+		var creds = new SigningCredentials(
+			key, // ✅ SOLO esto
+			SecurityAlgorithms.HmacSha256
+		);
+
+		var tokenHandler = new JwtSecurityTokenHandler();
+
+		var tokenDescriptor = new SecurityTokenDescriptor
+		{
+			Subject = new ClaimsIdentity(new[]
+			{
+				//PARA LOS PERMISOS POR ROLES
+				new Claim(ClaimTypes.NameIdentifier, usuario.UsuarioId.ToString()),
+				new Claim(ClaimTypes.Name, usuario.Nombre),
+				//new Claim(ClaimTypes.Email, usuario.Email),
+				new Claim(ClaimTypes.Email, usuario.Email ?? ""),
+				new Claim(ClaimTypes.Role, usuario.Rol?.Nombre ?? "")
+				//new Claim(ClaimTypes.Role, usuario.Rol)
+				//PARA LOS PERMISOS POR ROLES
+			}),
+			Issuer = _config["Jwt:Issuer"],
+			Audience = _config["Jwt:Audience"],
+			Expires = DateTime.UtcNow.AddHours(2),
+			SigningCredentials = new SigningCredentials(
+				key/*new SymmetricSecurityKey(key)*/,
+				SecurityAlgorithms.HmacSha256Signature)
+		};
+		//var token = tokenHandler.CreateToken(tokenDescriptor); ya existe en Token Service para creacion de Token
+		/*return Ok(new
+		{
+			token = tokenHandler.WriteToken(token)
+		});*/
+		return Ok();
+    }
+	//PARA PRUEBA DE PERMISO: 
+	/*[HttpGet("probarpermiso")]
+	public async Task<IActionResult> ProbarPermiso(
+		[FromServices] IPermissionService permissionService)
+	{
+		bool tiene = await permissionService
+			//.TienePermisoAsync(1, "PRODUCTOS_CREAR");
+			.TienePermisoAsync(1, "PRODUCTOS_inexistente");
+
+		return Ok(tiene);
+	}*/
+}
+
+
+
+/*
+Explicaciones:
+En JWT (JSON Web Token), un claim es simplemente una información (dato) que va dentro del token.
+
+Piensa en el JWT como un “paquete de datos” y los claims son las “etiquetas” que dicen cosas sobre el usuario o sobre el propio token.
+Tipos de Claims
+1. Registered claims (estándar)
+
+Son nombres ya definidos por el estándar JWT:
+
+sub → Subject (usuario o ID principal)
+exp → Expiración del token
+iat → Fecha de emisión
+iss → Emisor del token
+aud → Destinatario
+
+Resumen corto
+JWT = contenedor de información
+Claim = cada dato dentro del token
+Sirven para autenticación y autorización
+
+Un claim = un dato dentro del token JWT que dice algo sobre el usuario o su acceso.
+*/
+/*
+1) Login
+        │
+        ▼
+AuthController
+        │
+        ▼
+Crea JWT
+        │
+        ▼
+Claims
+ ├── NameIdentifier = 5
+ ├── Name = Ana
+ ├── Role = ADMIN
+ └── Email = ana@gmail.com
+        │
+        ▼
+El cliente guarda el token
+        │
+        ▼
+POST /api/productos
+        │
+        ▼
+[Authorize]
+        │
+        ▼
+PermisoAttribute
+        │
+        ▼
+Lee NameIdentifier
+        │
+        ▼
+usuarioId = 5
+        │
+        ▼
+PermissionService
+        │
+        ▼
+¿El usuario 5 tiene PRODUCTOS_CREAR?
+        │
+      Sí / No/*
+
+*/

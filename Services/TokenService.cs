@@ -1,0 +1,78 @@
+/*
+Responsabilidad:
+	-> Recibe usuario válido
+	-> Crea token
+	-> Agrega Claims:
+*/
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+
+namespace ApiInventario.Services;
+
+public class TokenService : ITokenService
+{
+    private readonly IConfiguration _configuration;
+
+
+    public TokenService(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+
+
+    public string CrearToken( int usuarioId, string nombre, string email, string rol)
+    {
+        var jwtSettings = _configuration.GetSection("Jwt");
+
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(
+                jwtSettings["Key"]!
+            )
+        );
+
+        var credentials = new SigningCredentials(
+            key,
+            SecurityAlgorithms.HmacSha256
+        );
+
+        var claims = new[]
+        {
+            new Claim(
+                ClaimTypes.NameIdentifier,
+                usuarioId.ToString()
+            ),
+
+            new Claim(
+                ClaimTypes.Name,
+                nombre
+            ),
+
+            new Claim(
+                ClaimTypes.Email,
+                email
+            ),
+
+            new Claim(
+                ClaimTypes.Role,
+                rol
+            )
+        };
+
+        var token = new JwtSecurityToken(
+				issuer: jwtSettings["Issuer"],
+				audience: jwtSettings["Audience"],
+				claims: claims,
+				expires: DateTime.Now.AddMinutes(
+					Convert.ToDouble(
+						jwtSettings["ExpiresMinutes"]
+					)
+				),
+			signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler()
+            .WriteToken(token);
+    }
+}

@@ -1,0 +1,12 @@
+2026-07-23 15:35:24.347 -03:00 [INF] User profile is available. Using 'C:\Users\Ana Alonso\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-07-23 15:35:24.488 -03:00 [INF] Now listening on: http://localhost:5193
+2026-07-23 15:35:24.493 -03:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-07-23 15:35:24.495 -03:00 [INF] Hosting environment: Development
+2026-07-23 15:35:24.496 -03:00 [INF] Content root path: C:\ApiInventario
+2026-07-23 15:38:51.019 -03:00 [INF] Application is shutting down...
+2026-07-23 15:42:23.041 -03:00 [INF] User profile is available. Using 'C:\Users\Ana Alonso\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-07-23 15:42:23.162 -03:00 [INF] Now listening on: http://localhost:5193
+2026-07-23 15:42:23.166 -03:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-07-23 15:42:23.168 -03:00 [INF] Hosting environment: Development
+2026-07-23 15:42:23.170 -03:00 [INF] Content root path: C:\ApiInventario
+2026-07-23 16:27:38.096 -03:00 [INF] Application is shutting down...

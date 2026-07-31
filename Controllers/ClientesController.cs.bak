@@ -1,0 +1,121 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ApiInventario.Data;
+using ApiInventario.Models;
+
+
+namespace ApiInventario.Controllers;
+
+    [Route("api/[controller]")]
+    [ApiController]
+    [Authorize]
+	public class ClientesController : ControllerBase
+	{
+		private readonly AppDbContext _context;
+
+		public ClientesController(AppDbContext context)
+		{
+			_context = context;
+		}
+
+		//leer
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Cliente>>> Get()
+        {
+            return await _context.Clientes
+                .OrderBy(p => p.Nombre)
+                .ToListAsync();
+        }
+		
+		//listar
+		[HttpGet("{id}")]
+        public async Task<ActionResult<Cliente>> Get(int id)
+        {
+            var cliente = await _context.Clientes.FindAsync(id);
+
+            if (cliente == null)
+                return NotFound();
+
+            return cliente;
+        }
+
+		//Nuevo
+        [HttpPost]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<Cliente>> Post(Cliente cliente)
+        {
+            // Validar RUC duplicado
+            if (!string.IsNullOrWhiteSpace(cliente.Documento))
+            {
+                bool existe = await _context.Clientes
+                    .AnyAsync(p => p.Documento == cliente.Documento);
+
+                if (existe)
+                    return BadRequest("Ya existe un cliente con ese Documento.");
+            }
+
+            _context.Clientes.Add(cliente);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(Get), new { id = cliente.ClienteId }, cliente);
+        }
+		
+		// PUT: api/Clientes/5 //update
+        [HttpPut("{id}")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> Put(int id, Cliente cliente)
+        {
+            var c = await _context.Clientes.FindAsync(id);
+
+            if (c == null)
+                return NotFound();
+
+            // Validar RUC duplicado
+            if (!string.IsNullOrWhiteSpace(cliente.Documento))
+            {
+                bool existe = await _context.Clientes
+                    .AnyAsync(x => x.Documento == cliente.Documento &&
+                                   x.ClienteId != id);
+
+                if (existe)
+                    return BadRequest("Ya existe un cliente con ese Documento.");
+            }
+
+            c.Nombre = cliente.Nombre;
+            c.Documento = cliente.Documento;
+            c.Telefono = cliente.Telefono;
+            c.Email = cliente.Email;
+            c.Direccion = cliente.Direccion;
+            c.Activo = cliente.Activo;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+		
+		// DELETE: api/clientes/5
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var cliente = await _context.Clientes.FindAsync(id);
+
+            if (cliente == null)
+                return NotFound();
+
+            _context.Clientes.Remove(cliente);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+		
+		/*//login
+		[Authorize]
+		[HttpGet("privado")]
+		 public IActionResult GetClientesPrivado()
+		 {
+				return Ok("Solo usuarios logueados ven esto!!!");
+		 }
+		 */
+	}

@@ -1,0 +1,44 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ApiInventario.Models;
+using ApiInventario.Data;
+
+namespace MiInventario.Controllers;
+
+    [ApiController]
+    [Route("api/[controller]")]
+	[Authorize]
+    public class RolesController : ControllerBase
+    {
+
+        [HttpGet("publico")]
+        public IActionResult Publico()
+        {
+            return Ok("Cualquier persona puede entrar");
+        }
+
+
+        [HttpGet("usuario")]
+        [Authorize]
+        public IActionResult Usuario()
+        {
+            return Ok("Usuario autenticado");
+        }
+
+
+        [HttpGet("admin")]
+        [Authorize(Roles = "ADMIN")]
+        public IActionResult Admin()
+        {
+            return Ok("Bienvenido administrador");
+        }
+
+
+        [HttpGet("ventas")]
+        [Authorize(Roles = "VENDEDOR")]
+        public IActionResult Ventas()
+        {
+            return Ok("Acceso módulo ventas");
+        }
+
+    }

@@ -1,0 +1,86 @@
+using ApiInventario.DTOs;
+using ApiInventario.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace ApiInventario.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+//[Authorize(Roles = "ADMIN")]
+public class UsuariosController : ControllerBase
+{
+    private readonly IUsuarioService _usuarioService;
+
+    public UsuariosController(IUsuarioService usuarioService)
+    {
+        _usuarioService = usuarioService;
+    }
+
+
+    // GET: api/usuarios
+    [HttpGet]
+	[Authorize(Roles = "ADMIN")]
+    public async Task<IActionResult> ObtenerUsuarios()
+    {
+        var usuarios = await _usuarioService.ObtenerUsuarios();
+
+        return Ok(usuarios);
+    }
+
+
+    // GET: api/usuarios/5
+    [HttpGet("{id}")]
+	[Authorize(Roles = "ADMIN")]
+    public async Task<IActionResult> ObtenerUsuario(int id)
+    {
+        var usuario = await _usuarioService.ObtenerUsuario(id);
+
+        if (usuario == null)
+            return NotFound(new
+            {
+                mensaje = "Usuario no encontrado"
+            });
+
+        return Ok(usuario);
+    }
+
+
+    // POST: api/usuarios
+    [HttpPost]
+	[AllowAnonymous]
+    public async Task<IActionResult> CrearUsuario(RegistroUsuarioDto dto)
+    {
+        try
+        {
+            var usuario = await _usuarioService.CrearUsuario(dto);
+
+            return CreatedAtAction(
+                nameof(ObtenerUsuario),
+                new { id = usuario.UsuarioId },
+                usuario
+            );
+        }
+        catch(Exception ex)
+        {
+            return BadRequest(new
+            {
+                mensaje = ex.Message
+            });
+        }
+    }
+
+
+    // GET: api/usuarios/existe/email@test.com
+    [HttpGet("existe/{email}")]
+	[Authorize(Roles = "ADMIN")]
+    public async Task<IActionResult> ExisteEmail(string email)
+    {
+        var existe = await _usuarioService.ExisteEmail(email);
+
+        return Ok(new
+        {
+            existe
+        });
+    }
+}

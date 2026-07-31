@@ -1,0 +1,82 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using ApiInventario.Models;
+using ApiInventario.Data;
+using ApiInventario.Security;
+
+namespace ApiInventario.Controllers;
+
+[Authorize] //valida : ¿Tiene un JWT válido?"
+[ApiController]
+[Route("api/[controller]")]
+public class ProductosController : ControllerBase
+{
+	private readonly AppDbContext _context;
+
+	public ProductosController(AppDbContext context)
+	{
+		_context = context;
+	}
+
+	[Permiso("PRODUCTOS_VER")]  //LISTAR TODOS LOS PRODUCTO
+	[HttpGet]
+	public async Task<IActionResult> Get()
+    {
+		var productos = await _context.Productos.ToListAsync();
+		return Ok(productos);
+	}
+
+	[Permiso("PRODUCTOS_VER")] //LISTAR PRODUCTO POR ID
+	HttpGet("{id}")	
+	public async Task<IActionResult> GetById(int id)
+	{
+		var producto = await _context.Productos.FindAsync(id); //FindAsync(id) es la mejor opción cuando buscas por la clave primaria.
+		if (producto == null)
+			return NotFound();
+		return Ok(producto);
+	}
+	
+	[Permiso("PRODUCTOS_CREAR")] //CREAR PRODUCTO
+	[HttpPost]
+	public async Task<IActionResult> Post(Producto producto)
+	{
+		_context.Productos.Add(producto);
+		await _context.SaveChangesAsync();
+		return Ok(producto);
+	}
+	
+	[Permiso("PRODUCTOS_EDITAR")] //MODIFICAR PRODUCTO
+	[HttpPut("{id}")] 
+	public async Task<IActionResult> Put(int id, [FromBody] Producto producto)
+	{
+		var p = await _context.Productos.FindAsync(id);
+		
+		if (p == null) return NotFound();
+		
+		//p.Codigo = producto.Codigo;
+		p.Nombre = producto.Nombre;
+		p.Descripcion = producto.Descripcion;
+		//p.PrecioCompra = producto.PrecioCompra;
+		p.PrecioVenta = producto.PrecioVenta;
+		//p.Stock = producto.Stock;
+		p.StockMinimo = producto.StockMinimo;
+		p.ProveedorId = producto.ProveedorId;
+		p.Activo = producto.Activo;
+		await _context.SaveChangesAsync();
+		return Ok(p);
+	}
+
+	[Permiso("PRODUCTOS_ELIMINAR")] //ELIMINAR PRODUCTO
+	[HttpDelete("{id}")]
+	public async Task<IActionResult> Delete(int id)
+	{
+		var p = await _context.Productos.FindAsync(id);
+		
+		if (p == null) return NotFound();
+
+		_context.Productos.Remove(p);
+			await _context.SaveChangesAsync();
+			return Ok();
+	}
+}

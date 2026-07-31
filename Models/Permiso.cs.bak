@@ -1,0 +1,17 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ApiInventario.Models;
+
+[Table("Permisos")]
+public class Permiso
+{
+	[Key]
+	public int PermisoId {get;set;}
+
+	[Required]
+	public string Nombre {get;set;}="";
+
+	public ICollection<RolPermiso> RolPermisos {get;set;}
+	=new List<RolPermiso>();
+}

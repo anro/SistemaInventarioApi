@@ -1,0 +1,9 @@
+using ApiInventario.DTOs;
+using ApiInventario.Models;
+
+namespace ApiInventario.Services;
+
+public interface ICompraService
+{
+    Task<Compra> CrearCompra(CompraDto dto);
+}

@@ -1,0 +1,24 @@
+using System.Security.Cryptography;
+using System.Text;
+
+namespace ApiInventario.Security
+{
+    public class PasswordService
+    {
+        public string Encriptar(string password)
+        {
+            using var sha = SHA256.Create();
+
+            var bytes = Encoding.UTF8.GetBytes(password);
+
+            var hash = sha.ComputeHash(bytes);
+
+            return Convert.ToBase64String(hash);
+        }
+	
+		public bool Verificar(string password, string passwordHash)
+		{
+			return Encriptar(password) == passwordHash;
+		}
+    }
+}

@@ -1,0 +1,51 @@
+using System.Text.Json;
+
+namespace ApiInventario.Middleware;
+
+public class ExceptionMiddleware
+{
+    private readonly RequestDelegate _next;
+
+    public ExceptionMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
+        {
+            await _next(context);
+        }
+        catch (Exception ex)
+        {
+            context.Response.ContentType = "application/json";
+
+            int statusCode;
+
+            // Errores de negocio
+            if (ex is InvalidOperationException)
+            {
+                statusCode = StatusCodes.Status400BadRequest;
+            }
+            else
+            {
+                statusCode = StatusCodes.Status500InternalServerError;
+            }
+
+            context.Response.StatusCode = statusCode;
+
+            var respuesta = new
+            {
+                Codigo = statusCode,
+                Mensaje = statusCode == 500
+                    ? "Ocurrió un error interno."
+                    : ex.Message,
+                Fecha = DateTime.Now
+            };
+
+            await context.Response.WriteAsync(
+                JsonSerializer.Serialize(respuesta));
+        }
+    }
+}

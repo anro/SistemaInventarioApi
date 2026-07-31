@@ -1,0 +1,33 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ApiInventario.Models;
+
+[Table("Ventas")]
+
+public class Venta
+{
+	[Key]
+	public int VentaId { get; set; }
+
+	[Required]
+	public int ClienteId { get; set; }
+		
+	[Required]
+	public int UsuarioId { get; set; }
+	
+	public DateTime Fecha { get; set; }
+	
+	[Column(TypeName = "decimal(18,2)")]
+	public decimal Total { get; set; }
+		
+	public string MetodoPago { get; set; } = string.Empty;
+		
+	// Relaciones
+	public Cliente? Clientes { get; set; }
+
+	public Usuario? Usuario { get; set; }
+
+	public ICollection<VentaDetalle> Detalles { get; set; }
+			= new List<VentaDetalle>();
+}
