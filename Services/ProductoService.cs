@@ -58,6 +58,107 @@ public class ProductoService : IProductoService
 			.FirstOrDefaultAsync();
 	}
 	
+	public async Task<ProductoDto> CrearAsync(ProductoCreateDto dto) //Insertar Producto
+	{
+		// Verificar que exista el proveedor
+		var proveedorExiste = await _context.Proveedores
+			.AnyAsync(p => p.ProveedorId == dto.ProveedorId);
+
+		if (!proveedorExiste)
+			throw new Exception("El proveedor no existe.");
+
+		// Verificar que el código no esté repetido
+		bool codigoExiste = await _context.Productos
+			.AnyAsync(p => p.Codigo == dto.Codigo);
+
+		if (codigoExiste)
+			throw new Exception("Ya existe un producto con ese código.");
+
+		var producto = new Producto
+		{
+			Codigo = dto.Codigo,
+			Nombre = dto.Nombre,
+			Descripcion = dto.Descripcion,
+			PrecioCompra = dto.PrecioCompra,
+			PrecioVenta = dto.PrecioVenta,
+			Stock = dto.Stock,
+			StockMinimo = dto.StockMinimo,
+			ProveedorId = dto.ProveedorId,
+			Activo = dto.Activo
+		};
+
+		_context.Productos.Add(producto);
+
+		await _context.SaveChangesAsync();
+
+		return new ProductoDto
+		{
+			ProductoId = producto.ProductoId,
+			Codigo = producto.Codigo,
+			Nombre = producto.Nombre,
+			Descripcion = producto.Descripcion,
+			PrecioCompra = producto.PrecioCompra,
+			PrecioVenta = producto.PrecioVenta,
+			Stock = producto.Stock,
+			StockMinimo = producto.StockMinimo,
+			ProveedorId = producto.ProveedorId,
+			Activo = producto.Activo
+		};
+	}
 	
+	public async Task<ProductoDto?> ActualizarAsync( //Modificar producto
+    int id,
+    ProductoUpdateDto dto)
+	{
+		var producto = await _context.Productos
+			.FirstOrDefaultAsync(p => p.ProductoId == id);
+
+		if (producto == null)
+			return null;
+
+		var proveedorExiste = await _context.Proveedores
+			.AnyAsync(p => p.ProveedorId == dto.ProveedorId);
+
+		if (!proveedorExiste)
+			throw new Exception("El proveedor no existe.");
+
+		producto.Nombre = dto.Nombre;
+		producto.Descripcion = dto.Descripcion;
+		producto.PrecioVenta = dto.PrecioVenta;
+		producto.StockMinimo = dto.StockMinimo;
+		producto.ProveedorId = dto.ProveedorId;
+		producto.Activo = dto.Activo;
+
+		await _context.SaveChangesAsync();
+
+		return new ProductoDto
+		{
+			ProductoId = producto.ProductoId,
+			Codigo = producto.Codigo,
+			Nombre = producto.Nombre,
+			Descripcion = producto.Descripcion,
+			PrecioCompra = producto.PrecioCompra,
+			PrecioVenta = producto.PrecioVenta,
+			Stock = producto.Stock,
+			StockMinimo = producto.StockMinimo,
+			ProveedorId = producto.ProveedorId,
+			Activo = producto.Activo
+		};
+	}
 	
+	public async Task<bool> EliminarAsync(int id) //Eliminar productos
+	{
+		var producto = await _context.Productos
+			.FirstOrDefaultAsync(p => p.ProductoId == id);
+
+		if (producto == null)
+			return false;
+
+		_context.Productos.Remove(producto);
+
+		await _context.SaveChangesAsync();
+
+		return true;
+	}
+
 }

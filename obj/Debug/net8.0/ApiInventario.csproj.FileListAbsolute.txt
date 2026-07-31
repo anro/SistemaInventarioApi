@@ -167,3 +167,4 @@ C:\ApiInventario\obj\Debug\net8.0\refint\ApiInventario.dll
 C:\ApiInventario\obj\Debug\net8.0\ApiInventario.pdb
 C:\ApiInventario\obj\Debug\net8.0\ApiInventario.genruntimeconfig.cache
 C:\ApiInventario\obj\Debug\net8.0\ref\ApiInventario.dll
+C:\ApiInventario\obj\Debug\net8.0\ApiInventario.sourcelink.json

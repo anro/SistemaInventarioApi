@@ -8,9 +8,9 @@ public interface IProductoService
 
     Task<ProductoDto?> ObtenerPorIdAsync(int id); // Obtener 1 producto por Id
 
-    //Task<ProductoDto> CrearAsync(ProductoCreateDto dto); //Insertar nuevo producto
+    Task<ProductoDto> CrearAsync(ProductoCreateDto dto); //Insertar nuevo producto
 
-    //Task<ProductoDto?> ActualizarAsync( int id, ProductoUpdateDto dto); //Modicar un Producto
+    Task<ProductoDto?> ActualizarAsync( int id, ProductoUpdateDto dto); //Modicar un Producto
 
-    //Task<bool> EliminarAsync(int id); // Eliminar un producto
+    Task<bool> EliminarAsync(int id); // Eliminar un producto
 }

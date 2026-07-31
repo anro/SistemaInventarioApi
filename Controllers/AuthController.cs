@@ -104,12 +104,13 @@ public class AuthController : ControllerBase
 				key/*new SymmetricSecurityKey(key)*/,
 				SecurityAlgorithms.HmacSha256Signature)
 		};
-		//var token = tokenHandler.CreateToken(tokenDescriptor); ya existe en Token Service para creacion de Token
-		/*return Ok(new
+		// Usar para el swagger solamente el token que imprime o si no return OK() solamente porque ya hay otra parte donde se declara el token
+		var token = tokenHandler.CreateToken(tokenDescriptor);// ya existe en Token Service para creacion de Token
+		return Ok(new
 		{
 			token = tokenHandler.WriteToken(token)
-		});*/
-		return Ok();
+		});
+		//return Ok();
     }
 	//PARA PRUEBA DE PERMISO: 
 	/*[HttpGet("probarpermiso")]
