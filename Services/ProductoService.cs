@@ -100,8 +100,7 @@ public class ProductoService : IProductoService
 			PrecioCompra = producto.PrecioCompra,
 			PrecioVenta = producto.PrecioVenta,
 			Stock = producto.Stock,
-			StockMinimo = producto.StockMinimo,
-			ProveedorId = producto.ProveedorId,
+			ProveedorId = producto.ProveedorId ?? 0,
 			Activo = producto.Activo
 		};
 	}
@@ -141,7 +140,7 @@ public class ProductoService : IProductoService
 			PrecioVenta = producto.PrecioVenta,
 			Stock = producto.Stock,
 			StockMinimo = producto.StockMinimo,
-			ProveedorId = producto.ProveedorId,
+			ProveedorId = producto.ProveedorId ?? 0,
 			Activo = producto.Activo
 		};
 	}

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ApiInventario.Data;
 using ApiInventario.Models;
 using ApiInventario.DTOs;
+using ApiInventario.Security;
 
 namespace ApiInventario.Controllers;
 
@@ -19,8 +20,9 @@ public class ClientesController : ControllerBase
         _context = context;
     }
 
-    // GET: api/Clientes
-    [HttpGet]
+	// GET: api/Clientes
+	[Permiso("CLIENTES_VER")]  //LISTAR TODOS LOS CLIENTES
+	[HttpGet]
     public async Task<ActionResult<IEnumerable<ClienteDto>>> Get()
     {
         var clientes = await _context.Clientes
@@ -41,6 +43,7 @@ public class ClientesController : ControllerBase
     }
 
     // GET: api/Clientes/5
+	[Permiso("CLIENTES_VER")] //BUSCAR CLIENTE POR ID
     [HttpGet("{id}")]
     public async Task<ActionResult<ClienteDto>> Get(int id)
     {
@@ -65,9 +68,9 @@ public class ClientesController : ControllerBase
     }
 
     // POST: api/Clientes
+	[Permiso("CLIENTES_CREAR")] //INSERTAR NUEVO CLIENTE
     [HttpPost]
-    [Authorize(Roles = "ADMIN")]
-    public async Task<ActionResult<ClienteDto>> Post(ClienteDto dto)
+        public async Task<ActionResult<ClienteDto>> Post(ClienteCreateDto dto)
     {
         if (!string.IsNullOrWhiteSpace(dto.Documento))
         {
@@ -91,15 +94,15 @@ public class ClientesController : ControllerBase
         _context.Clientes.Add(cliente);
         await _context.SaveChangesAsync();
 
-        dto.ClienteId = cliente.ClienteId;
+        //dto.ClienteId = cliente.ClienteId;
 
         return CreatedAtAction(nameof(Get), new { id = cliente.ClienteId }, dto);
     }
 
     // PUT: api/Clientes/5
+	[Permiso("CLIENTES_EDITAR")] //MODIFICAR CLIENTE
     [HttpPut("{id}")]
-    [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> Put(int id, ClienteDto dto)
+	public async Task<IActionResult> Put(int id,[FromBody] ClienteUpdateDto dto)
     {
         var cliente = await _context.Clientes.FindAsync(id);
 
@@ -129,8 +132,8 @@ public class ClientesController : ControllerBase
     }
 
     // DELETE: api/Clientes/5
+	[Permiso("CLIENTES_ELIMINAR")] //ELIMINAR CLIENTE
     [HttpDelete("{id}")]
-    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Delete(int id)
     {
         var cliente = await _context.Clientes.FindAsync(id);

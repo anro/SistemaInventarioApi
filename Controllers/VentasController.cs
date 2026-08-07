@@ -5,20 +5,15 @@ using Microsoft.AspNetCore.Mvc;
 using ApiInventario.DTOs;
 using ApiInventario.Services;
 using Microsoft.AspNetCore.Authorization;
+using ApiInventario.Security;
 
 namespace ApiInventario.Controllers;
 
+[Authorize] //valida : ¿Tiene un JWT válido?"
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class VentasController : ControllerBase
 {
-	//private readonly AppDbContext _context;
-	/*public VentasController(AppDbContext context)
-	{
-		_context = context;
-	}*/
-	
 	private readonly IVentaService _service;
 	
 	public VentasController(IVentaService service)
@@ -26,14 +21,11 @@ public class VentasController : ControllerBase
 		_service = service;
 	}
 	
+	[Permiso("VENTAS_CREAR")] //CREAR VENTA
 	[HttpPost]
 	public async Task<IActionResult> Crear(VentaDto dto)
 	{
 		dto.Fecha = DateTime.Now;
-		//_context.Ventas.Add(venta);
-		//await _context.SaveChangesAsync();
-
-		//return Ok(venta);
 		var claim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
 
 		if (claim == null)
@@ -55,7 +47,7 @@ public class VentasController : ControllerBase
 		});
 	}
 
-
+	[Permiso("VENTAS_VER")] //LISTAR VENTAS
 	[HttpGet]
 	public async Task<IActionResult> ObtenerVentas()
 	{
@@ -64,7 +56,8 @@ public class VentasController : ControllerBase
 		return Ok(ventas);
 	}
 	
-	[HttpGet("{id}")]
+	[Permiso("VENTAS_VER")] //BUSCAR VENTAS
+	[HttpGet("{id}")] 
 	public async Task<IActionResult> ObtenerVenta(int id)
 	{
 		var venta = await _service.ObtenerVentaPorId(id);

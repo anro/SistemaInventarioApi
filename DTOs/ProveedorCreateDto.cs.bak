@@ -2,7 +2,7 @@ namespace ApiInventario.DTOs
 {
     public class ProveedorDto
     {
-        public int ProveedorId { get; set; }
+        public int IdProveedor { get; set; }
 
         public string RazonSocial { get; set; }
 

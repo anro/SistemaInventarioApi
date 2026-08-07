@@ -20,6 +20,8 @@ namespace ApiInventario.DTOs
 		
 		public bool Activo { get; set; }
 		
-		
+		public int? ProveedorId { get; set; }
+
+		public string? ProveedorNombre { get; set; }
     }
 }

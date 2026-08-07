@@ -2,6 +2,7 @@ using ApiInventario.DTOs;
 using ApiInventario.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using ApiInventario.Security;
 
 namespace ApiInventario.Controllers;
 
@@ -17,6 +18,7 @@ public class ComprasController : ControllerBase
 		_service = service;
 	}
 	
+	[Permiso("COMPRAS_CREAR")]  //CREAR COMPRA
 	[HttpPost]
 	public async Task<IActionResult> Crear(CompraDto dto)
 	{
@@ -41,6 +43,7 @@ public class ComprasController : ControllerBase
 		});
 	}
 	
+	[Permiso("COMPRAS_VER")] // VER TODAS LAS COMPRAS
 	[HttpGet]
 	public async Task<IActionResult> ObtenerCompras()
 	{
@@ -48,6 +51,7 @@ public class ComprasController : ControllerBase
 		return Ok(compras);
 	}
 
+	[Permiso("COMPRAS_VER")] //BUSCAR COMPRA	
 	[HttpGet("{id}")]
 	public async Task<IActionResult> ObtenerCompra(int id)
 	{

@@ -58,7 +58,7 @@ public class ProductoService : IProductoService
 			.FirstOrDefaultAsync();
 	}
 	
-	public async Task<ProductoDto> CrearAsync(ProductoCreateDto dto)
+	public async Task<ProductoDto> CrearAsync(ProductoCreateDto dto) //Insertar Producto
 	{
 		// Verificar que exista el proveedor
 		var proveedorExiste = await _context.Proveedores
@@ -100,13 +100,12 @@ public class ProductoService : IProductoService
 			PrecioCompra = producto.PrecioCompra,
 			PrecioVenta = producto.PrecioVenta,
 			Stock = producto.Stock,
-			StockMinimo = producto.StockMinimo,
-			ProveedorId = producto.ProveedorId,
+			ProveedorId = producto.ProveedorId ?? 0,
 			Activo = producto.Activo
 		};
 	}
 	
-	public async Task<ProductoDto?> ActualizarAsync(
+	public async Task<ProductoDto?> ActualizarAsync( //Modificar producto
     int id,
     ProductoUpdateDto dto)
 	{
@@ -146,7 +145,7 @@ public class ProductoService : IProductoService
 		};
 	}
 	
-	public async Task<bool> EliminarAsync(int id)
+	public async Task<bool> EliminarAsync(int id) //Eliminar productos
 	{
 		var producto = await _context.Productos
 			.FirstOrDefaultAsync(p => p.ProductoId == id);

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApiInventario.Data;
 using ApiInventario.Models;
+using ApiInventario.DTOs;
+using ApiInventario.Security;
 
 namespace ApiInventario.Controllers
 {
@@ -19,83 +21,123 @@ namespace ApiInventario.Controllers
         }
 
         // GET: api/proveedores
+		[Permiso("PROVEEDORES_VER")]  //LISTAR TODOS LOS PROVEEDORES
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Proveedor>>> Get()
-        {
-            return await _context.Proveedores
-                .OrderBy(p => p.Nombre)
-                .ToListAsync();
-        }
+		public async Task<ActionResult<IEnumerable<ProveedorDto>>> Get()
+		{
+			var proveedores = await _context.Proveedores
+				.OrderBy(p => p.Nombre)
+				.Select(p => new ProveedorDto
+				{
+					ProveedorId = p.ProveedorId,
+					RazonSocial = p.Nombre,
+					Ruc = p.RUC,
+					Telefono = p.Telefono,
+					Email = p.Email,
+					Direccion = p.Direccion,
+					Activo = p.Activo
+				})
+				.ToListAsync();
+
+			return Ok(proveedores);
+		}
 
         // GET: api/proveedores/5
+		[Permiso("PROVEEDORES_VER")] //BUSCAR PROVEEDOR
         [HttpGet("{id}")]
-        public async Task<ActionResult<Proveedor>> Get(int id)
-        {
-            var proveedor = await _context.Proveedores.FindAsync(id);
+		public async Task<ActionResult<ProveedorDto>> Get(int id)
+		{
+			var proveedor = await _context.Proveedores
+				.Where(p => p.ProveedorId == id)
+				.Select(p => new ProveedorDto
+				{
+					ProveedorId = p.ProveedorId,
+					RazonSocial = p.Nombre,
+					Ruc = p.RUC,
+					Telefono = p.Telefono,
+					Email = p.Email,
+					Direccion = p.Direccion,
+					Activo = p.Activo
+				})
+				.FirstOrDefaultAsync();
 
-            if (proveedor == null)
-                return NotFound();
+			if (proveedor == null)
+				return NotFound();
 
-            return proveedor;
-        }
+			return Ok(proveedor);
+		}
 
         // POST: api/proveedores
+		[Permiso("PROVEEDORES_CREAR")] //CREAR NUEVO PROVEEDOR
         [HttpPost]
-        [Authorize(Roles = "ADMIN")]
-        public async Task<ActionResult<Proveedor>> Post(Proveedor proveedor)
-        {
-            // Validar RUC duplicado
-            if (!string.IsNullOrWhiteSpace(proveedor.RUC))
-            {
-                bool existe = await _context.Proveedores
-                    .AnyAsync(p => p.RUC == proveedor.RUC);
+        public async Task<ActionResult> Post(ProveedorCreateDto dto)
+		{
+			// Validar RUC duplicado
+			if (!string.IsNullOrWhiteSpace(dto.Ruc))
+			{
+				bool existe = await _context.Proveedores
+					.AnyAsync(p => p.RUC == dto.Ruc);
 
-                if (existe)
-                    return BadRequest("Ya existe un proveedor con ese RUC.");
-            }
+				if (existe)
+					return BadRequest("Ya existe un proveedor con ese RUC.");
+			}
 
-            _context.Proveedores.Add(proveedor);
-            await _context.SaveChangesAsync();
+			var proveedor = new Proveedor
+			{
+				Nombre = dto.RazonSocial,
+				RUC = dto.Ruc,
+				Telefono = dto.Telefono,
+				Email = dto.Email,
+				Direccion = dto.Direccion,
+				Activo = dto.Activo
+			};
 
-            return CreatedAtAction(nameof(Get), new { id = proveedor.ProveedorId }, proveedor);
-        }
+			_context.Proveedores.Add(proveedor);
+			await _context.SaveChangesAsync();
+
+			return CreatedAtAction(
+				nameof(Get),
+				new { id = proveedor.ProveedorId },
+				proveedor
+			);
+		}
 
         // PUT: api/proveedores/5
-        [HttpPut("{id}")]
-        [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> Put(int id, Proveedor proveedor)
-        {
-            var p = await _context.Proveedores.FindAsync(id);
+		[Permiso("PROVEEDORES_EDITAR")] // MODIFICAR PROVEEDOR
+		[HttpPut("{id}")]
+		public async Task<IActionResult> Put(int id, [FromBody] ProveedorUpdateDto dto)
+		{
+			var p = await _context.Proveedores.FindAsync(id);
 
-            if (p == null)
-                return NotFound();
+			if (p == null)
+				return NotFound();
 
-            // Validar RUC duplicado
-            if (!string.IsNullOrWhiteSpace(proveedor.RUC))
-            {
-                bool existe = await _context.Proveedores
-                    .AnyAsync(x => x.RUC == proveedor.RUC &&
-                                   x.ProveedorId != id);
+			// Validar RUC duplicado
+			if (!string.IsNullOrWhiteSpace(dto.Ruc))
+			{
+				bool existe = await _context.Proveedores
+					.AnyAsync(x => x.RUC == dto.Ruc &&
+								   x.ProveedorId != id);
 
-                if (existe)
-                    return BadRequest("Ya existe un proveedor con ese RUC.");
-            }
+				if (existe)
+					return BadRequest("Ya existe un proveedor con ese RUC.");
+			}
 
-            p.Nombre = proveedor.Nombre;
-            p.RUC = proveedor.RUC;
-            p.Telefono = proveedor.Telefono;
-            p.Email = proveedor.Email;
-            p.Direccion = proveedor.Direccion;
-            p.Activo = proveedor.Activo;
+			p.Nombre = dto.RazonSocial;
+			p.RUC = dto.Ruc;
+			p.Telefono = dto.Telefono;
+			p.Email = dto.Email;
+			p.Direccion = dto.Direccion;
+			p.Activo = dto.Activo;
 
-            await _context.SaveChangesAsync();
+			await _context.SaveChangesAsync();
 
-            return NoContent();
-        }
+			return NoContent();
+		}
 
         // DELETE: api/proveedores/5
+		[Permiso("PROVEEDORES_ELIMINAR")] //ELIMINAR PROVEEDOR
         [HttpDelete("{id}")]
-        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Delete(int id)
         {
             var proveedor = await _context.Proveedores.FindAsync(id);
